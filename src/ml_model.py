@@ -1,3 +1,5 @@
+from sklearn.metrics import classification_report, confusion_matrix
+
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -88,3 +90,12 @@ print(pd.crosstab(df["is_fraud"], df["predicted_fraud"]))
 df.to_csv("data/transactions_with_predictions.csv", index=False)
 
 print("\n✅ Modelo executado com sucesso!")
+
+# ----------------------------
+# 🧪 avaliação do modelo
+# ----------------------------
+print("\n📊 Matriz de confusão:")
+print(confusion_matrix(df["is_fraud"], df["predicted_fraud"]))
+
+print("\n📈 Relatório de classificação:")
+print(classification_report(df["is_fraud"], df["predicted_fraud"]))
