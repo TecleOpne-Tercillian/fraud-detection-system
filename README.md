@@ -1,11 +1,5 @@
 
----
 
-# 🧾 📄 `README.md` PROFISSIONAL
-
-Crie um arquivo `README.md` na raiz do seu projeto e cole isso:
-
----
 
 ```md
 # 💳 Fraud Detection System (Machine Learning Project)
