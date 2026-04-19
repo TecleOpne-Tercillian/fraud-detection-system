@@ -1,31 +1,32 @@
 
+---
 
 
-```md
+
+```md id="r1"
 # 💳 Fraud Detection System (Machine Learning Project)
 
-Projeto completo de detecção de fraudes em transações financeiras utilizando Machine Learning, engenharia de features e dashboard interativo com Streamlit.
+Projeto de detecção de fraudes em transações financeiras usando Machine Learning, engenharia de features e dashboard interativo com Streamlit.
 
 ---
 
 ## 🚀 Demonstração
 
-🔗 Acesse o sistema online:  
-*(adicione aqui o link do Streamlit Cloud depois do deploy)*
+🔗 https://fraud-detection-system-tecleopne.streamlit.app/
 
 ---
 
 ## 📌 Objetivo
 
-Construir um sistema capaz de:
+Criar um sistema capaz de:
 - Detectar transações suspeitas automaticamente
-- Analisar padrões de comportamento de usuários
-- Gerar score de risco para cada transação
+- Analisar comportamento de usuários
+- Gerar score de risco
 - Visualizar resultados em dashboard interativo
 
 ---
 
-## 🧠 Tecnologias Utilizadas
+## 🧠 Tecnologias
 
 - Python
 - Pandas
@@ -35,60 +36,50 @@ Construir um sistema capaz de:
 
 ---
 
-## 📊 Pipeline do Projeto
+## 📊 Pipeline
 
-1. Coleta de dados de transações
-2. Engenharia de features comportamentais
+1. Coleta de dados
+2. Engenharia de features:
    - tempo entre transações
    - média de gasto por usuário
    - desvio de comportamento
    - frequência de uso
-3. Treinamento de modelo de Machine Learning
-   - Random Forest Classifier
-4. Avaliação do modelo
-   - precision
-   - recall
-   - f1-score
-5. Dashboard interativo com Streamlit
+3. Treinamento do modelo (Random Forest)
+4. Avaliação (precision, recall, f1-score)
+5. Dashboard com Streamlit
 
 ---
 
-## 🤖 Modelo de Machine Learning
+## 🤖 Modelo
 
-O modelo utilizado foi um **Random Forest Classifier**, treinado para prever a probabilidade de fraude com base em comportamento do usuário.
+Modelo utilizado: **Random Forest Classifier**
 
-Features utilizadas:
+Features:
 - amount
-- localização (lat/long)
-- categoria do comerciante
+- lat / long
+- merchant_category
 - device_id
-- tempo entre transações
-- padrão de gasto do usuário
+- time_diff
+- user_avg_amount
+- amount_vs_avg
+- user_tx_count
 
 ---
 
 ## 📊 Dashboard
 
-O sistema inclui um dashboard interativo com:
+O sistema inclui:
 
 - Distribuição de fraudes
-- Análise de valores
-- Taxa de fraude por categoria
+- Valores das transações
+- Fraude por categoria
 - Score de risco
-- Análise individual por usuário
+- Análise por usuário
 - Filtros interativos
 
 ---
 
-## 🧠 Principais Insights
-
-- Transações com valores muito acima da média têm maior risco
-- Alta frequência em curto tempo indica comportamento suspeito
-- Padrão de gasto do usuário é um forte indicador de fraude
-
----
-
-## 📁 Estrutura do Projeto
+## 📁 Estrutura
 
 ```
 
@@ -98,7 +89,7 @@ fraud-detection-system/
 ├── src/
 │   └── ml_model.py
 ├── data/
-│   └── transactions.csv
+│   ├── transactions.csv
 │   └── transactions_with_predictions.csv
 ├── notebooks/
 └── requirements.txt
@@ -107,50 +98,56 @@ fraud-detection-system/
 
 ---
 
-## 📦 Como Executar
+## 📦 Como executar
 
-### 1. Instalar dependências
+### Instalar dependências
 ```bash
 pip install -r requirements.txt
 ````
 
-### 2. Treinar modelo
+### Treinar modelo
 
-```bash
+```bash id="x1"
 python src/ml_model.py
 ```
 
-### 3. Rodar dashboard
+### Rodar dashboard
 
-```bash
+```bash id="x2"
 streamlit run app.py
 ```
 
 ---
 
-## 🌐 Deploy
-
-O projeto pode ser publicado usando **Streamlit Cloud**.
-
----
-
 ## 💡 Aprendizados
 
-* Engenharia de features em dados reais
-* Modelos de detecção de fraude
+* Machine Learning aplicado a fraude
+* Feature engineering comportamental
+* Modelos supervisionados
 * Visualização de dados com Streamlit
-* Construção de pipeline completo de ML
+* Construção de pipeline completo
 
 ---
 
 ## 👨‍💻 Autor
 
-Projeto desenvolvido para fins de aprendizado em Machine Learning e Data Science.
+Projeto desenvolvido para portfólio de Data Science / Machine Learning.
 
-```
+````
+
+---
 
 
 
+---
 
 
-```
+
+---
+
+
+
+---
+
+
+````
