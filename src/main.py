@@ -1,8 +1,16 @@
 import pandas as pd
 
-df = pd.read_csv('data/transactions.csv')
+# carregar dataset
+df = pd.read_csv("data/transactions.csv")
 
+# ver primeiras linhas
 print(df.head())
 
-print("\nTransações por usuário:")
-print(df.groupby('user_id').size())
+# estatísticas básicas
+print(df.describe())
+
+# quantas fraudes existem
+print(df["is_fraud"].value_counts())
+
+# média de valor por usuário
+print(df.groupby("user_id")["amount"].mean())
