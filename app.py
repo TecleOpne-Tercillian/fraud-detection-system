@@ -18,14 +18,28 @@ st.title("💳 Fraud Detection System")
 df = pd.read_csv("data/transactions_with_predictions.csv")
 
 # ----------------------------
+# 🧠 SCORE DE RISCO (NOVO)
+# ----------------------------
+df["risk_score"] = (
+    df["predicted_fraud"] * 0.6 +
+    (df["amount"] > df["amount"].quantile(0.9)).astype(int) * 0.2 +
+    (df["time_diff"] < 60).astype(int) * 0.2
+)
+
+# ----------------------------
 # 🎛️ SIDEBAR (FILTROS)
 # ----------------------------
 st.sidebar.header("🔎 Filtros")
 
 show_fraud = st.sidebar.checkbox("Mostrar apenas fraudes detectadas")
-max_value = st.sidebar.slider("Valor máximo da transação", 0, int(df["amount"].max()), int(df["amount"].max()))
+max_value = st.sidebar.slider(
+    "Valor máximo da transação",
+    0,
+    int(df["amount"].max()),
+    int(df["amount"].max())
+)
 
-# aplicar filtros
+# filtro base
 filtered_df = df[df["amount"] <= max_value]
 
 if show_fraud:
@@ -87,8 +101,44 @@ fig3 = px.bar(
 st.plotly_chart(fig3, use_container_width=True)
 
 # ----------------------------
-# 📋 TABELA
+# 🧠 GRÁFICO 4 - SCORE DE RISCO (NOVO)
 # ----------------------------
-st.subheader("📋 Dados")
+st.subheader("🧠 Score de Risco")
+
+fig4 = px.histogram(
+    filtered_df,
+    x="risk_score",
+    nbins=10,
+    title="Distribuição do Risco"
+)
+
+st.plotly_chart(fig4, use_container_width=True)
+
+# ----------------------------
+# 👤 ANÁLISE POR USUÁRIO (NOVO)
+# ----------------------------
+st.subheader("👤 Análise por Usuário")
+
+user = st.selectbox("Selecione um usuário", df["user_id"].unique())
+
+user_df = df[df["user_id"] == user]
+
+st.write("📋 Transações do usuário:")
+st.dataframe(user_df, use_container_width=True)
+
+st.write("📊 Resumo do usuário:")
+
+colu1, colu2, colu3 = st.columns(3)
+
+colu1.metric("Total", len(user_df))
+colu2.metric("Fraudes detectadas", int(user_df["predicted_fraud"].sum()))
+colu3.metric("Valor médio", round(user_df["amount"].mean(), 2))
+
+st.divider()
+
+# ----------------------------
+# 📋 TABELA FINAL
+# ----------------------------
+st.subheader("📋 Dados Filtrados")
 
 st.dataframe(filtered_df, use_container_width=True)
