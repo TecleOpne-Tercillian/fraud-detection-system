@@ -1,17 +1,17 @@
 ```md
-# 💳 Fraud Detection System (Machine Learning Project)
+💳 Fraud Detection System (Machine Learning Project)
 
 Projeto de detecção de fraudes em transações financeiras utilizando Machine Learning, engenharia de features e dashboard interativo com Streamlit.
 
----
 
-## 🚀 Demonstração
+
+🚀 Demonstração
 
 🔗 https://fraud-detection-system-tecleopne.streamlit.app/
 
----
 
-## 📌 Objetivo
+
+📌 Objetivo
 
 Criar um sistema capaz de:
 - Detectar transações suspeitas automaticamente
@@ -19,9 +19,9 @@ Criar um sistema capaz de:
 - Gerar score de risco para cada transação
 - Visualizar resultados em dashboard interativo
 
----
 
-## 🧠 Tecnologias Utilizadas
+
+🧠 Tecnologias Utilizadas
 
 - Python  
 - Pandas  
@@ -29,9 +29,9 @@ Criar um sistema capaz de:
 - Streamlit  
 - Plotly  
 
----
 
-## 📊 Pipeline do Projeto
+
+📊 Pipeline do Projeto
 
 1. Coleta de dados de transações
 2. Engenharia de features comportamentais:
@@ -43,9 +43,9 @@ Criar um sistema capaz de:
 4. Avaliação do modelo (precision, recall, f1-score)
 5. Dashboard interativo com Streamlit
 
----
 
-## 🤖 Modelo de Machine Learning
+
+🤖 Modelo de Machine Learning
 
 Modelo utilizado: Random Forest Classifier
 
@@ -60,9 +60,9 @@ Features utilizadas:
 - amount_vs_avg
 - user_tx_count
 
----
 
-## 📊 Funcionalidades do Dashboard
+
+📊 Funcionalidades do Dashboard
 
 - Distribuição de fraudes
 - Análise de valores das transações
@@ -71,9 +71,9 @@ Features utilizadas:
 - Análise individual por usuário
 - Filtros interativos
 
----
 
-## 📁 Estrutura do Projeto
+
+📁 Estrutura do Projeto
 
 ```
 
@@ -89,30 +89,29 @@ fraud-detection-system/
 
 ````
 
----
 
-## 📦 Como Executar
+📦 Como Executar
 
-### Instalar dependências
+Instalar dependências
 ```bash
 pip install -r requirements.txt
 ````
 
-### Treinar modelo
+Treinar modelo
 
 ```bash
 python src/ml_model.py
 ```
 
-### Rodar dashboard
+Rodar dashboard
 
 ```bash
 streamlit run app.py
 ```
 
----
 
-## 💡 Aprendizados
+
+💡 Aprendizados
 
 * Machine Learning aplicado à detecção de fraudes
 * Engenharia de features comportamentais
@@ -120,9 +119,9 @@ streamlit run app.py
 * Visualização de dados com Streamlit
 * Construção de pipeline completo de dados
 
----
 
-## 👨‍💻 Autor
+
+👨‍💻 Autor
 
 Projeto desenvolvido para portfólio de Data Science e Machine Learning
 
