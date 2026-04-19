@@ -1,11 +1,11 @@
-from sklearn.metrics import classification_report, confusion_matrix
-
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 
 import pandas as pd
-from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix
 
 # ----------------------------
 # 📥 carregar dados
@@ -16,21 +16,20 @@ df = pd.read_csv("data/transactions.csv")
 # 🧠 FEATURE ENGINEERING
 # ----------------------------
 
-# garantir ordenação temporal por usuário
 df = df.sort_values(by=["user_id", "timestamp"])
 df["timestamp"] = pd.to_datetime(df["timestamp"])
 
-# tempo entre transações do mesmo usuário
+# tempo entre transações
 df["time_diff"] = df.groupby("user_id")["timestamp"].diff().dt.total_seconds()
 df["time_diff"] = df["time_diff"].fillna(0)
 
 # média de gasto por usuário
 df["user_avg_amount"] = df.groupby("user_id")["amount"].transform("mean")
 
-# desvio do comportamento normal
+# desvio do comportamento
 df["amount_vs_avg"] = df["amount"] / (df["user_avg_amount"] + 1)
 
-# frequência de transações do usuário
+# frequência de transações
 df["user_tx_count"] = df.groupby("user_id")["amount"].transform("count")
 
 # ----------------------------
@@ -43,7 +42,7 @@ le_device = LabelEncoder()
 df["device_id"] = le_device.fit_transform(df["device_id"])
 
 # ----------------------------
-# 📊 features do modelo
+# 📊 features e target
 # ----------------------------
 features = [
     "amount",
@@ -58,44 +57,42 @@ features = [
 ]
 
 X = df[features]
+y = df["is_fraud"]
 
 # ----------------------------
-# 🤖 modelo de detecção de anomalias
+# ✂️ divisão treino/teste
 # ----------------------------
-model = IsolationForest(
-    contamination=0.05,
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# ----------------------------
+# 🤖 modelo Random Forest
+# ----------------------------
+model = RandomForestClassifier(
+    n_estimators=100,
     random_state=42
 )
 
-model.fit(X)
+model.fit(X_train, y_train)
 
-# prever anomalias
-df["anomaly_score"] = model.predict(X)
-
-# converter para fraude (1) e normal (0)
-df["predicted_fraud"] = df["anomaly_score"].apply(lambda x: 1 if x == -1 else 0)
+# previsões
+y_pred = model.predict(X_test)
 
 # ----------------------------
-# 📊 resultados
-# ----------------------------
-print("\n📊 Resultado do modelo:")
-print(df["predicted_fraud"].value_counts())
-
-print("\n📌 Fraudes reais vs previstas:")
-print(pd.crosstab(df["is_fraud"], df["predicted_fraud"]))
-
-# ----------------------------
-# 💾 salvar resultado
-# ----------------------------
-df.to_csv("data/transactions_with_predictions.csv", index=False)
-
-print("\n✅ Modelo executado com sucesso!")
-
-# ----------------------------
-# 🧪 avaliação do modelo
+# 📊 avaliação do modelo
 # ----------------------------
 print("\n📊 Matriz de confusão:")
-print(confusion_matrix(df["is_fraud"], df["predicted_fraud"]))
+print(confusion_matrix(y_test, y_pred))
 
 print("\n📈 Relatório de classificação:")
-print(classification_report(df["is_fraud"], df["predicted_fraud"]))
+print(classification_report(y_test, y_pred))
+
+# ----------------------------
+# 💾 salvar previsões no dataset completo
+# ----------------------------
+df["predicted_fraud"] = model.predict(X)
+
+df.to_csv("data/transactions_with_predictions.csv", index=False)
+
+print("\n✅ Modelo Random Forest executado com sucesso!")
