@@ -1,12 +1,7 @@
-
----
-
-
-
-```md id="r1"
+```md
 # 💳 Fraud Detection System (Machine Learning Project)
 
-Projeto de detecção de fraudes em transações financeiras usando Machine Learning, engenharia de features e dashboard interativo com Streamlit.
+Projeto de detecção de fraudes em transações financeiras utilizando Machine Learning, engenharia de features e dashboard interativo com Streamlit.
 
 ---
 
@@ -21,42 +16,43 @@ Projeto de detecção de fraudes em transações financeiras usando Machine Lear
 Criar um sistema capaz de:
 - Detectar transações suspeitas automaticamente
 - Analisar comportamento de usuários
-- Gerar score de risco
+- Gerar score de risco para cada transação
 - Visualizar resultados em dashboard interativo
 
 ---
 
-## 🧠 Tecnologias
+## 🧠 Tecnologias Utilizadas
 
-- Python
-- Pandas
-- Scikit-learn
-- Streamlit
-- Plotly
+- Python  
+- Pandas  
+- Scikit-learn  
+- Streamlit  
+- Plotly  
 
 ---
 
-## 📊 Pipeline
+## 📊 Pipeline do Projeto
 
-1. Coleta de dados
-2. Engenharia de features:
+1. Coleta de dados de transações
+2. Engenharia de features comportamentais:
    - tempo entre transações
    - média de gasto por usuário
    - desvio de comportamento
    - frequência de uso
-3. Treinamento do modelo (Random Forest)
-4. Avaliação (precision, recall, f1-score)
-5. Dashboard com Streamlit
+3. Treinamento de modelo de Machine Learning
+4. Avaliação do modelo (precision, recall, f1-score)
+5. Dashboard interativo com Streamlit
 
 ---
 
-## 🤖 Modelo
+## 🤖 Modelo de Machine Learning
 
-Modelo utilizado: **Random Forest Classifier**
+Modelo utilizado: Random Forest Classifier
 
-Features:
+Features utilizadas:
 - amount
-- lat / long
+- lat
+- long
 - merchant_category
 - device_id
 - time_diff
@@ -66,39 +62,36 @@ Features:
 
 ---
 
-## 📊 Dashboard
-
-O sistema inclui:
+## 📊 Funcionalidades do Dashboard
 
 - Distribuição de fraudes
-- Valores das transações
-- Fraude por categoria
+- Análise de valores das transações
+- Taxa de fraude por categoria
 - Score de risco
-- Análise por usuário
+- Análise individual por usuário
 - Filtros interativos
 
 ---
 
-## 📁 Estrutura
+## 📁 Estrutura do Projeto
 
 ```
 
 fraud-detection-system/
-│
 ├── app.py
-├── src/
-│   └── ml_model.py
+├── requirements.txt
 ├── data/
 │   ├── transactions.csv
 │   └── transactions_with_predictions.csv
-├── notebooks/
-└── requirements.txt
+├── src/
+│   └── ml_model.py
+└── notebooks/
 
 ````
 
 ---
 
-## 📦 Como executar
+## 📦 Como Executar
 
 ### Instalar dependências
 ```bash
@@ -107,13 +100,13 @@ pip install -r requirements.txt
 
 ### Treinar modelo
 
-```bash id="x1"
+```bash
 python src/ml_model.py
 ```
 
 ### Rodar dashboard
 
-```bash id="x2"
+```bash
 streamlit run app.py
 ```
 
@@ -121,33 +114,17 @@ streamlit run app.py
 
 ## 💡 Aprendizados
 
-* Machine Learning aplicado a fraude
-* Feature engineering comportamental
+* Machine Learning aplicado à detecção de fraudes
+* Engenharia de features comportamentais
 * Modelos supervisionados
 * Visualização de dados com Streamlit
-* Construção de pipeline completo
+* Construção de pipeline completo de dados
 
 ---
 
 ## 👨‍💻 Autor
 
-Projeto desenvolvido para portfólio de Data Science / Machine Learning.
+Projeto desenvolvido para portfólio de Data Science e Machine Learning
 
-````
-
----
-
-
-
----
-
-
-
----
-
-
-
----
-
-
-````
+```
+```
