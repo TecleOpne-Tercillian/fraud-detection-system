@@ -204,11 +204,14 @@ st.dataframe(
 st.subheader("🧠 Explicabilidade (SHAP)")
 
 try:
+    import shap
+    import matplotlib.pyplot as plt
+
     model_path = os.path.join(BASE_DIR, "data", "model.pkl")
 
     if os.path.exists(model_path):
-        model = pickle.load(open(model_path, "rb"))
 
+        model = pickle.load(open(model_path, "rb"))
         explainer = shap.TreeExplainer(model)
 
         sample = filtered_df.sample(1)
@@ -234,17 +237,19 @@ try:
 
         fig, ax = plt.subplots()
 
-        # compatibilidade total
+        # 🔥 CASO 1: modelo retorna lista (clássico SHAP)
         if isinstance(shap_values, list):
-            values = shap_values[1][0]
+            sv = shap_values[1][0]
             base = explainer.expected_value[1]
+
+        # 🔥 CASO 2: modelo retorna array direto
         else:
-            values = shap_values[0]
+            sv = shap_values[0]
             base = explainer.expected_value
 
         shap.plots._waterfall.waterfall_legacy(
             base,
-            values,
+            sv,
             feature_names=features,
             show=False
         )
@@ -252,7 +257,7 @@ try:
         st.pyplot(fig)
 
     else:
-        st.info("Modelo não encontrado para SHAP")
+        st.info("Modelo SHAP não encontrado")
 
 except Exception as e:
     st.warning(f"SHAP indisponível: {str(e)}")
