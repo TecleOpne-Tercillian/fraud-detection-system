@@ -101,7 +101,10 @@ st.divider()
 # ----------------------------
 # 📊 GRÁFICO PROFISSIONAL DE RISCO (NOVO)
 # ----------------------------
-st.subheader("📊 Distribuição Profissional de Risco")
+import numpy as np
+import plotly.graph_objects as go
+
+st.subheader("📊 Risk Intelligence (Fraud Behavior Distribution)")
 
 risk = filtered_df["risk_score"].dropna()
 
@@ -110,43 +113,42 @@ hist = np.histogram(risk, bins=30)
 x = hist[1][:-1]
 y = hist[0]
 
-fig1 = go.Figure()
+fig = go.Figure()
 
 # distribuição
-fig1.add_trace(go.Bar(
+fig.add_trace(go.Bar(
     x=x,
     y=y,
-    name="Distribuição",
-    marker_color="#636EFA",
-    opacity=0.7
+    name="Transações",
+    marker_color="#7C3AED",
+    opacity=0.75
 ))
 
-# curva tendência
-fig1.add_trace(go.Scatter(
+# tendência
+fig.add_trace(go.Scatter(
     x=x,
     y=y,
     mode="lines",
-    name="Tendência de risco",
-    line=dict(color="red", width=3)
+    name="Tendência",
+    line=dict(color="#EF4444", width=3)
 ))
 
-# threshold fraude
-fig1.add_vline(
+# linha de fraude
+fig.add_vline(
     x=0.8,
-    line_width=3,
     line_dash="dash",
     line_color="red",
-    annotation_text="Limite de Fraude (0.8)"
+    annotation_text="Fraud Threshold"
 )
 
-fig1.update_layout(
+fig.update_layout(
     template="plotly_dark",
     xaxis_title="Risk Score",
-    yaxis_title="Quantidade de Transações",
-    bargap=0.1
+    yaxis_title="Volume de Transações",
+    height=400
 )
 
-st.plotly_chart(fig1, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
 
 # ----------------------------
 # 💰 VALORES
