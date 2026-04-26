@@ -29,7 +29,7 @@ df = pd.read_csv(DATA_PATH)
 # modelo (opcional no app)
 import joblib
 
-model = joblib.load(MODEL_PATH))
+model = joblib.load(MODEL_PATH)
 
 # ----------------------------
 # 🧠 RISK SCORE

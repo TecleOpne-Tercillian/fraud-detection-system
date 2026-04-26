@@ -127,7 +127,8 @@ df.to_csv(OUTPUT_PATH, index=False)
 # 💾 salvar modelo
 # ----------------------------
 os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
-pickle.dump(model_rf, open(MODEL_PATH, "wb"))
+import joblib
+joblib.dump(model_rf, MODEL_PATH)
 
 # ----------------------------
 # 🧠 SHAP (EXPLICABILIDADE)
