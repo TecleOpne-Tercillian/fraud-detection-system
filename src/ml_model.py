@@ -1,6 +1,7 @@
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -12,9 +13,17 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 
 # ----------------------------
+# 📁 CAMINHOS ROBUSTOS
+# ----------------------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+DATA_PATH = os.path.join(BASE_DIR, "..", "data", "transactions.csv")
+OUTPUT_PATH = os.path.join(BASE_DIR, "..", "data", "transactions_with_predictions.csv")
+
+# ----------------------------
 # 📥 carregar dados
 # ----------------------------
-df = pd.read_csv("data/transactions.csv")
+df = pd.read_csv(DATA_PATH)
 
 # ----------------------------
 # 🧠 FEATURE ENGINEERING
@@ -22,21 +31,13 @@ df = pd.read_csv("data/transactions.csv")
 df = df.sort_values(by=["user_id", "timestamp"])
 df["timestamp"] = pd.to_datetime(df["timestamp"])
 
-# tempo entre transações
-df["time_diff"] = df.groupby("user_id")["timestamp"].diff().dt.total_seconds()
-df["time_diff"] = df["time_diff"].fillna(0)
-
-# média de gasto por usuário
+df["time_diff"] = df.groupby("user_id")["timestamp"].diff().dt.total_seconds().fillna(0)
 df["user_avg_amount"] = df.groupby("user_id")["amount"].transform("mean")
-
-# desvio do comportamento
 df["amount_vs_avg"] = df["amount"] / (df["user_avg_amount"] + 1)
-
-# frequência de transações
 df["user_tx_count"] = df.groupby("user_id")["amount"].transform("count")
 
 # ----------------------------
-# 🔧 preparar dados categóricos
+# 🔧 preparar categóricos
 # ----------------------------
 le_category = LabelEncoder()
 df["merchant_category"] = le_category.fit_transform(df["merchant_category"])
@@ -63,7 +64,7 @@ X = df[features]
 y = df["is_fraud"]
 
 # ----------------------------
-# ✂️ divisão treino/teste (STRATIFIED)
+# ✂️ divisão treino/teste
 # ----------------------------
 X_train, X_test, y_train, y_test = train_test_split(
     X, y,
@@ -73,12 +74,12 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # ----------------------------
-# 🧠 FUNÇÃO DE AVALIAÇÃO
+# 🧠 função de avaliação
 # ----------------------------
-def evaluate_model(name, y_test, y_pred):
+def evaluate_model(name, y_true, y_pred):
     print(f"\n📊 {name}")
-    print(confusion_matrix(y_test, y_pred))
-    print(classification_report(y_test, y_pred))
+    print(confusion_matrix(y_true, y_pred))
+    print(classification_report(y_true, y_pred))
 
 # ----------------------------
 # 🤖 BASELINE - Logistic Regression
@@ -101,6 +102,7 @@ model_rf = RandomForestClassifier(
 
 model_rf.fit(X_train, y_train)
 
+# avaliação padrão
 y_pred_rf = model_rf.predict(X_test)
 evaluate_model("Random Forest", y_test, y_pred_rf)
 
@@ -117,8 +119,10 @@ evaluate_model(f"Random Forest (Threshold {threshold})", y_test, y_pred_custom)
 # ----------------------------
 # 🔍 FEATURE IMPORTANCE
 # ----------------------------
-importances = model_rf.feature_importances_
-feat_imp = pd.Series(importances, index=features).sort_values(ascending=False)
+feat_imp = pd.Series(
+    model_rf.feature_importances_,
+    index=features
+).sort_values(ascending=False)
 
 print("\n🔍 Feature Importance:")
 print(feat_imp)
@@ -139,14 +143,15 @@ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
 plt.xlabel('Previsto')
 plt.ylabel('Real')
 plt.title("Confusion Matrix (Threshold Ajustado)")
+plt.tight_layout()
 plt.show()
 
 # ----------------------------
-# 💾 salvar previsões no dataset completo
+# 💾 salvar previsões
 # ----------------------------
 df["fraud_probability"] = model_rf.predict_proba(X)[:, 1]
 df["predicted_fraud"] = (df["fraud_probability"] > threshold).astype(int)
 
-df.to_csv("data/transactions_with_predictions.csv", index=False)
+df.to_csv(OUTPUT_PATH, index=False)
 
-print("\n✅ Modelo treinado, avaliado e salvo com sucesso!")
+print("\n✅ Modelo treinado e salvo com sucesso!")
