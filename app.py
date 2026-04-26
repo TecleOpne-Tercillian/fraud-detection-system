@@ -201,7 +201,7 @@ st.dataframe(
 # ----------------------------
 # 🧠 SHAP (SAFE MODE)
 # ----------------------------
-st.subheader("🧠 Explicabilidade (SHAP)")
+st.subheader("🧠 Explicação da Fraude (IA)")
 
 try:
     import shap
@@ -235,29 +235,42 @@ try:
 
         shap_values = explainer.shap_values(X_sample)
 
-        fig, ax = plt.subplots()
-
-        # 🔥 CASO 1: modelo retorna lista (clássico SHAP)
+        # ----------------------------
+        # pega classe fraude
+        # ----------------------------
         if isinstance(shap_values, list):
             sv = shap_values[1][0]
-            base = explainer.expected_value[1]
-
-        # 🔥 CASO 2: modelo retorna array direto
         else:
             sv = shap_values[0]
-            base = explainer.expected_value
 
-        shap.plots._waterfall.waterfall_legacy(
-            base,
-            sv,
-            feature_names=features,
-            show=False
-        )
+        base = float(explainer.expected_value[1]) if isinstance(explainer.expected_value, list) else float(explainer.expected_value)
 
-        st.pyplot(fig)
+        # ----------------------------
+        # 🎯 transforma em texto estilo banco
+        # ----------------------------
+        impact = pd.Series(sv, index=features).sort_values()
+
+        top_risk = impact.tail(3)
+        top_safe = impact.head(2)
+
+        st.markdown("### 🧠 Explicação estilo banco:")
+
+        st.write("💳 Essa transação foi analisada automaticamente pela IA.")
+
+        st.write("🚨 Principais fatores de risco:")
+
+        for i, v in top_risk.items():
+            st.write(f"- {i} contribuiu para AUMENTAR risco")
+
+        st.write("🟢 Fatores que reduziram risco:")
+
+        for i, v in top_safe.items():
+            st.write(f"- {i} ajudou a reduzir suspeita")
+
+        st.info(f"📊 Score base do modelo: {round(base, 4)}")
 
     else:
-        st.info("Modelo SHAP não encontrado")
+        st.info("Modelo não encontrado para explicação")
 
 except Exception as e:
-    st.warning(f"SHAP indisponível: {str(e)}")
+    st.warning("🧠 Explicação de IA indisponível no momento (modo seguro ativo)")
