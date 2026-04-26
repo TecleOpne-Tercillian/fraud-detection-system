@@ -12,8 +12,8 @@ import numpy as np
 # ----------------------------
 st.set_page_config(page_title="MagnaShield Fraud Intelligence", layout="wide")
 
-st.title("💳 MagnaShield Fraud Intelligence")
-st.caption("TecleOpne System • Magna Tercillia Division")
+st.title("💳 MagnaShield Fraud Intelligence System")
+st.caption("Real-time Fraud Detection • TecleOpne System")
 
 # ----------------------------
 # 📁 DATA
@@ -86,25 +86,43 @@ if show_fraud_only:
 if risk_filter != "Todos":
     filtered_df = filtered_df[filtered_df["risk_level"] == risk_filter]
 
+high_risk = filtered_df[filtered_df["risk_score"] > 0.8]
+
+if len(high_risk) > 0:
+    st.error(f"🚨 ALERTA: {len(high_risk)} transações críticas detectadas")
+elif filtered_df["risk_score"].mean() > 0.6:
+    st.warning("⚠️ Atenção: comportamento acima do padrão detectado")
+else:
+    st.success("🟢 Sistema operando dentro do padrão normal")
+
 # ----------------------------
 # 📊 KPIs
 # ----------------------------
 col1, col2, col3, col4 = st.columns(4)
 
 col1.metric("Transações", len(filtered_df))
-col2.metric("Fraudes reais", int(filtered_df["is_fraud"].sum()))
-col3.metric("Fraudes detectadas", int(filtered_df["predicted_fraud"].sum()))
-col4.metric("Risco médio", round(filtered_df["risk_score"].mean(), 3))
+
+col2.metric(
+    "Fraudes reais",
+    int(filtered_df["is_fraud"].sum())
+)
+
+col3.metric(
+    "Fraudes detectadas",
+    int(filtered_df["predicted_fraud"].sum())
+)
+
+col4.metric(
+    "Risco médio",
+    round(filtered_df["risk_score"].mean(), 3)
+)
 
 st.divider()
 
 # ----------------------------
 # 📊 GRÁFICO PROFISSIONAL DE RISCO (NOVO)
 # ----------------------------
-import numpy as np
-import plotly.graph_objects as go
-
-st.subheader("📊 Risk Intelligence (Fraud Behavior Distribution)")
+st.subheader("📊 Distribuição Profissional de Risco")
 
 risk = filtered_df["risk_score"].dropna()
 
@@ -113,42 +131,43 @@ hist = np.histogram(risk, bins=30)
 x = hist[1][:-1]
 y = hist[0]
 
-fig = go.Figure()
+fig1 = go.Figure()
 
 # distribuição
-fig.add_trace(go.Bar(
+fig1.add_trace(go.Bar(
     x=x,
     y=y,
-    name="Transações",
-    marker_color="#7C3AED",
-    opacity=0.75
+    name="Distribuição",
+    marker_color="#636EFA",
+    opacity=0.7
 ))
 
-# tendência
-fig.add_trace(go.Scatter(
+# curva tendência
+fig1.add_trace(go.Scatter(
     x=x,
     y=y,
     mode="lines",
-    name="Tendência",
-    line=dict(color="#EF4444", width=3)
+    name="Tendência de risco",
+    line=dict(color="red", width=3)
 ))
 
-# linha de fraude
-fig.add_vline(
+# threshold fraude
+fig1.add_vline(
     x=0.8,
+    line_width=3,
     line_dash="dash",
     line_color="red",
-    annotation_text="Fraud Threshold"
+    annotation_text="Limite de Fraude (0.8)"
 )
 
-fig.update_layout(
+fig1.update_layout(
     template="plotly_dark",
     xaxis_title="Risk Score",
-    yaxis_title="Volume de Transações",
-    height=400
+    yaxis_title="Quantidade de Transações",
+    bargap=0.1
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig1, use_container_width=True)
 
 # ----------------------------
 # 💰 VALORES
