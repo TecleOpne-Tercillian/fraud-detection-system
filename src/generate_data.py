@@ -3,36 +3,50 @@ import numpy as np
 
 np.random.seed(42)
 
-n = 5000
+n_users = 200
+transactions_per_user = 50
 
 data = []
 
-for i in range(n):
-    user_id = np.random.randint(1, 100)
+for user_id in range(1, n_users + 1):
 
-    amount = np.random.exponential(scale=100)
+    base_amount = np.random.uniform(20, 200)
+    home_lat = -23.5 + np.random.randn() * 0.1
+    home_long = -46.6 + np.random.randn() * 0.1
+    main_device = f"dev_{np.random.randint(1, 10)}"
 
-    is_fraud = 1 if np.random.rand() < 0.05 else 0
+    for i in range(transactions_per_user):
 
-    if is_fraud:
-        amount *= np.random.uniform(5, 20)
+        is_fraud = np.random.rand() < 0.03  # 3% fraude
 
-    lat = -23 + np.random.randn()
-    long = -46 + np.random.randn()
+        if is_fraud:
+            amount = base_amount * np.random.uniform(5, 15)
+            lat = home_lat + np.random.uniform(5, 20)
+            long = home_long + np.random.uniform(5, 20)
+            device_id = f"dev_{np.random.randint(10, 30)}"
+            hour = np.random.choice([1, 2, 3, 4])
+        else:
+            amount = base_amount * np.random.uniform(0.5, 1.5)
+            lat = home_lat + np.random.randn() * 0.01
+            long = home_long + np.random.randn() * 0.01
+            device_id = main_device
+            hour = np.random.randint(8, 22)
 
-    merchant_category = np.random.choice([
-        "food", "electronics", "transport", "jewelry"
-    ])
+        timestamp = pd.Timestamp("2026-04-01") + pd.Timedelta(
+            days=np.random.randint(0, 10),
+            hours=hour,
+            minutes=np.random.randint(0, 60)
+        )
 
-    device_id = f"dev_{np.random.randint(1, 20)}"
+        merchant_category = np.random.choice([
+            "food", "transport", "shopping", "electronics"
+        ])
 
-    timestamp = pd.Timestamp("2026-04-01") + pd.to_timedelta(np.random.randint(0, 100000), unit="s")
-
-    data.append([
-        user_id, amount, timestamp,
-        lat, long, merchant_category,
-        device_id, is_fraud
-    ])
+        data.append([
+            user_id, amount, timestamp,
+            lat, long, merchant_category,
+            device_id, int(is_fraud)
+        ])
 
 df = pd.DataFrame(data, columns=[
     "user_id", "amount", "timestamp",
@@ -42,4 +56,4 @@ df = pd.DataFrame(data, columns=[
 
 df.to_csv("data/transactions.csv", index=False)
 
-print("✅ Dataset gerado com sucesso!")
+print("✅ Dataset REALISTA gerado!")
