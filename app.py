@@ -6,6 +6,8 @@ import os
 import time
 import random
 import numpy as np
+import shap
+import pickle
 
 # ----------------------------
 # ⚙️ CONFIG
@@ -22,6 +24,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(BASE_DIR, "data", "transactions_with_predictions.csv")
 
 df = pd.read_csv(DATA_PATH)
+model = pickle.load(open("data/model.pkl", "rb"))
+explainer = pickle.load(open("data/shap_explainer.pkl", "rb"))
 
 # ----------------------------
 # 🧠 RISK SCORE
@@ -286,3 +290,33 @@ st.dataframe(
     filtered_df.sort_values("risk_score", ascending=False),
     use_container_width=True
 )
+
+st.subheader("🧠 Explicabilidade da Fraude (SHAP)")
+
+# selecionar uma transação
+sample = filtered_df.sample(1)
+
+st.write("Transação analisada:")
+st.dataframe(sample)
+
+# preparar dados
+features = [
+    "amount",
+    "lat",
+    "long",
+    "merchant_category",
+    "device_id",
+    "time_diff",
+    "user_avg_amount",
+    "amount_vs_avg",
+    "user_tx_count"
+]
+
+X_sample = sample[features]
+
+# explicação SHAP
+shap_values = explainer.shap_values(X_sample)
+
+st.text("Impacto das variáveis na decisão:")
+
+st.pyplot(shap.summary_plot(shap_values, X_sample, show=False))
