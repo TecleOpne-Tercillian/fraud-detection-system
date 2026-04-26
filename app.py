@@ -2,13 +2,16 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import os
+import time
+import random
 
 # ----------------------------
 # ⚙️ CONFIG
 # ----------------------------
-st.set_page_config(page_title="Fraud Detection System", layout="wide")
+st.set_page_config(page_title="MagnaShield Fraud Intelligence", layout="wide")
 
-st.title("💳 Fraud Detection System")
+st.title("💳 MagnaShield Fraud Intelligence")
+st.caption("TecleOpne System • Magna Tercillia Division")
 
 # ----------------------------
 # 📁 DATA
@@ -28,6 +31,15 @@ df["risk_level"] = df["risk_score"].apply(
 )
 
 # ----------------------------
+# 🚨 ALERTA STYLE (BANCO)
+# ----------------------------
+def fraud_alert(score):
+    if score > 0.8:
+        st.error("🚨 ALERTA CRÍTICO: Transação com alto risco de fraude detectada!")
+    elif score > 0.6:
+        st.warning("⚠️ Transação suspeita detectada")
+
+# ----------------------------
 # 🎛️ SIDEBAR FILTROS
 # ----------------------------
 st.sidebar.header("🔎 Filtros")
@@ -37,7 +49,7 @@ risk_filter = st.sidebar.selectbox(
     ["Todos", "🔴 Alto", "🟡 Médio", "🟢 Baixo"]
 )
 
-show_fraud = st.sidebar.checkbox("Somente fraudes detectadas")
+show_fraud_only = st.sidebar.checkbox("Somente fraudes detectadas")
 
 category_filter = st.sidebar.multiselect(
     "Categoria",
@@ -66,7 +78,7 @@ filtered_df = filtered_df[
     filtered_df["merchant_category"].isin(category_filter)
 ]
 
-if show_fraud:
+if show_fraud_only:
     filtered_df = filtered_df[filtered_df["predicted_fraud"] == 1]
 
 if risk_filter != "Todos":
@@ -85,14 +97,16 @@ col4.metric("Risco médio", round(filtered_df["risk_score"].mean(), 3))
 st.divider()
 
 # ----------------------------
-# 📈 FRAUDE DISTRIBUIÇÃO
+# 📈 GRÁFICO RISCO
 # ----------------------------
-st.subheader("📊 Distribuição de Fraudes")
+st.subheader("📊 Distribuição de Risco")
 
 fig1 = px.histogram(
     filtered_df,
-    x="is_fraud",
-    color="is_fraud"
+    x="risk_score",
+    nbins=30,
+    color="risk_score",
+    color_continuous_scale="reds"
 )
 
 st.plotly_chart(fig1, use_container_width=True)
@@ -117,18 +131,15 @@ st.subheader("📍 Fraude por Categoria")
 
 cat_df = filtered_df.groupby("merchant_category")["is_fraud"].mean().reset_index()
 
-fig3 = px.bar(cat_df, x="merchant_category", y="is_fraud")
+fig3 = px.bar(
+    cat_df,
+    x="merchant_category",
+    y="is_fraud",
+    color="is_fraud",
+    color_continuous_scale="reds"
+)
 
 st.plotly_chart(fig3, use_container_width=True)
-
-# ----------------------------
-# 🧠 RISCO DISTRIBUIÇÃO
-# ----------------------------
-st.subheader("🧠 Score de Risco")
-
-fig4 = px.histogram(filtered_df, x="risk_score", nbins=25)
-
-st.plotly_chart(fig4, use_container_width=True)
 
 # ----------------------------
 # 🚨 TOP USUÁRIOS
@@ -142,21 +153,51 @@ user_risk = (
     .sort_values("risk_score", ascending=False)
 )
 
-fig5 = px.bar(user_risk.head(10), x="user_id", y="risk_score")
+fig4 = px.bar(user_risk.head(10), x="user_id", y="risk_score", color="risk_score")
 
-st.plotly_chart(fig5, use_container_width=True)
+st.plotly_chart(fig4, use_container_width=True)
 
 # ----------------------------
 # 🚨 ALERTAS
 # ----------------------------
-st.subheader("🚨 Alertas de Alta Fraude")
+st.subheader("🚨 Alertas de Alta Risco")
 
 alerts = filtered_df[filtered_df["risk_score"] > 0.8]
+
+if len(alerts) > 0:
+    fraud_alert(alerts["risk_score"].max())
 
 st.dataframe(
     alerts.sort_values("risk_score", ascending=False),
     use_container_width=True
 )
+
+# ----------------------------
+# 🔴 SIMULAÇÃO TEMPO REAL
+# ----------------------------
+st.subheader("🔴 Simulação de Transações em Tempo Real")
+
+def generate_fake_transaction():
+    return {
+        "user_id": random.randint(1, 300),
+        "amount": round(random.uniform(10, 5000), 2),
+        "merchant_category": random.choice(df["merchant_category"].unique()),
+        "risk_score": random.random()
+    }
+
+if st.button("▶ Iniciar simulação"):
+    placeholder = st.empty()
+
+    for i in range(10):
+        tx = generate_fake_transaction()
+
+        temp_df = pd.DataFrame([tx])
+
+        placeholder.dataframe(temp_df)
+
+        fraud_alert(tx["risk_score"])
+
+        time.sleep(1)
 
 # ----------------------------
 # 👤 USUÁRIO
@@ -177,8 +218,6 @@ st.dataframe(
     user_df.sort_values("risk_score", ascending=False),
     use_container_width=True
 )
-
-st.divider()
 
 # ----------------------------
 # 📋 TABELA FINAL
