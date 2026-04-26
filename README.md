@@ -79,21 +79,29 @@ Features utilizadas:
 
 ## 📁 Estrutura do Projeto
 
-```text id="xq9m2p"
+```text id="proj1"
 fraud-detection-system/
 │
 ├── app.py
 ├── requirements.txt
+├── README.md
+├── runtime.txt
 │
 ├── data/
+│   ├── model.pkl
+│   ├── shap_explainer.pkl
+│   ├── shap_sample
 │   ├── transactions.csv
 │   └── transactions_with_predictions.csv
 │
 ├── src/
+│   ├── generate_data.py
 │   └── ml_model.py
 │
-└── notebooks/
+├── notebooks/
+│   └── analysis.ipynb
 ```
+
 
 ---
 
