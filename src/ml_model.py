@@ -132,16 +132,30 @@ pickle.dump(model_rf, open(MODEL_PATH, "wb"))
 # ----------------------------
 # 🧠 SHAP (EXPLICABILIDADE)
 # ----------------------------
+# ----------------------------
+# 🧠 SHAP (VERSÃO SEGURA PARA STREAMLIT)
+# ----------------------------
 explainer = shap.TreeExplainer(model_rf)
 
 X_sample = X_test.sample(200, random_state=42)
 
+# shap values
 shap_values = explainer.shap_values(X_sample)
 
-# salvar explicador
-pickle.dump(explainer, open(SHAP_PATH, "wb"))
+# IMPORTANTE: não salvar objeto inteiro (evita crash em deploy)
+import json
 
-# salvar amostra
+shap_summary = {
+    "features": features,
+    "mean_abs_shap": abs(shap_values[1]).mean(axis=0).tolist() if isinstance(shap_values, list) else abs(shap_values).mean(axis=0).tolist()
+}
+
+SHAP_JSON_PATH = os.path.join(BASE_DIR, "..", "data", "shap_summary.json")
+
+with open(SHAP_JSON_PATH, "w") as f:
+    json.dump(shap_summary, f)
+
+# salvar amostra (ok)
 X_sample.to_csv(SHAP_SAMPLE_PATH, index=False)
 
-print("\n✅ Modelo + SHAP")
+print("\n✅ Modelo + SHAP seguro salvo com sucesso")

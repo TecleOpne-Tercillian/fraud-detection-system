@@ -1,13 +1,10 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import os
-import numpy as np
 import pickle
-import matplotlib.pyplot as plt
-import shap
-
+import numpy as np
+Import shap
 # ----------------------------
 # ⚙️ CONFIG
 # ----------------------------
@@ -23,254 +20,187 @@ st.caption("TecleOpne System • Fraud Detection Platform")
 # 📁 DATA
 # ----------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 DATA_PATH = os.path.join(BASE_DIR, "data", "transactions_with_predictions.csv")
+MODEL_PATH = os.path.join(BASE_DIR, "data", "model.pkl")
+EXPLAINER_PATH = os.path.join(BASE_DIR, "data", "explainer.pkl")
 
 df = pd.read_csv(DATA_PATH)
+
+model = pickle.load(open(MODEL_PATH, "rb"))
+explainer = pickle.load(open(EXPLAINER_PATH, "rb"))
 
 # ----------------------------
 # 🧠 RISK SCORE
 # ----------------------------
 df["risk_score"] = df["fraud_probability"]
 
-df["risk_level"] = df["risk_score"].apply(
-    lambda x: "🔴 Alto" if x > 0.7 else "🟡 Médio" if x > 0.3 else "🟢 Baixo"
+df["risk_level"] = pd.cut(
+    df["risk_score"],
+    bins=[-1, 0.3, 0.7, 1.0],
+    labels=["🟢 Baixo", "🟡 Médio", "🔴 Alto"]
 )
 
 # ----------------------------
-# 🚨 ALERT FUNCTION
+# 🚨 ALERT SYSTEM
 # ----------------------------
-def fraud_alert(df_local):
+def alert(df_local):
     high = df_local[df_local["risk_score"] > 0.8]
 
     if len(high) > 0:
-        st.error(f"🚨 ALERTA CRÍTICO: {len(high)} transações de alto risco detectadas")
+        st.error(f"🚨 ALERTA CRÍTICO: {len(high)} transações de alto risco")
     elif df_local["risk_score"].mean() > 0.6:
-        st.warning("⚠️ Comportamento suspeito detectado")
+        st.warning("⚠️ comportamento suspeito detectado")
     else:
-        st.success("🟢 Sistema operando normalmente")
+        st.success("🟢 sistema normal")
 
 # ----------------------------
-# 🎛️ SIDEBAR FILTERS
+# 🎛️ FILTERS
 # ----------------------------
-st.sidebar.header("🔎 Filtros")
+st.sidebar.header("Filtros")
 
 risk_filter = st.sidebar.selectbox(
-    "Nível de risco",
+    "Risco",
     ["Todos", "🔴 Alto", "🟡 Médio", "🟢 Baixo"]
 )
 
-show_fraud_only = st.sidebar.checkbox("Somente fraudes detectadas")
+only_fraud = st.sidebar.checkbox("Somente fraude")
 
-category_filter = st.sidebar.multiselect(
-    "Categoria",
-    options=df["merchant_category"].unique(),
-    default=df["merchant_category"].unique()
-)
-
-min_val, max_val = st.sidebar.slider(
-    "Valor da transação",
+min_v, max_v = st.sidebar.slider(
+    "Valor",
     float(df["amount"].min()),
     float(df["amount"].max()),
     (float(df["amount"].min()), float(df["amount"].max()))
 )
 
-# ----------------------------
-# 🔍 FILTERING
-# ----------------------------
-filtered_df = df.copy()
-
-filtered_df = filtered_df[
-    (filtered_df["amount"] >= min_val) &
-    (filtered_df["amount"] <= max_val)
+filtered = df[
+    (df["amount"] >= min_v) &
+    (df["amount"] <= max_v)
 ]
 
-filtered_df = filtered_df[
-    filtered_df["merchant_category"].isin(category_filter)
-]
-
-if show_fraud_only:
-    filtered_df = filtered_df[filtered_df["predicted_fraud"] == 1]
+if only_fraud:
+    filtered = filtered[filtered["predicted_fraud"] == 1]
 
 if risk_filter != "Todos":
-    filtered_df = filtered_df[filtered_df["risk_level"] == risk_filter]
+    filtered = filtered[filtered["risk_level"] == risk_filter]
 
 # ----------------------------
-# 🚨 ALERT SYSTEM
-# ----------------------------
-fraud_alert(filtered_df)
-
-# ----------------------------
-# 📊 KPIs
+# KPIs
 # ----------------------------
 col1, col2, col3, col4 = st.columns(4)
 
-col1.metric("Transações", len(filtered_df))
-col2.metric("Fraudes reais", int(filtered_df["is_fraud"].sum()))
-col3.metric("Fraudes detectadas", int(filtered_df["predicted_fraud"].sum()))
-col4.metric("Risco médio", round(filtered_df["risk_score"].mean(), 3))
+col1.metric("Transações", len(filtered))
+col2.metric("Fraudes reais", int(filtered["is_fraud"].sum()))
+col3.metric("Detectadas", int(filtered["predicted_fraud"].sum()))
+col4.metric("Risco médio", round(filtered["risk_score"].mean(), 3))
+
+alert(filtered)
 
 st.divider()
 
 # ----------------------------
-# 📊 RISK DISTRIBUTION
+# 📊 GRÁFICO PROFISSIONAL
 # ----------------------------
 st.subheader("📊 Distribuição de Risco")
 
-fig1 = px.histogram(
-    filtered_df,
+fig = px.histogram(
+    filtered,
     x="risk_score",
     nbins=30,
     color_discrete_sequence=["#7C3AED"]
 )
 
-st.plotly_chart(fig1, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
 
 # ----------------------------
-# 💰 VALUES
+# 💰 VALORES
 # ----------------------------
-st.subheader("💰 Distribuição de Valores")
+st.subheader("💰 Valores")
 
-fig2 = px.box(
-    filtered_df,
-    y="amount",
-    color="is_fraud"
-)
-
-st.plotly_chart(fig2, use_container_width=True)
-
-# ----------------------------
-# 📍 CATEGORY FRAUD
-# ----------------------------
-st.subheader("📍 Fraude por Categoria")
-
-cat_df = filtered_df.groupby("merchant_category")["is_fraud"].mean().reset_index()
-
-fig3 = px.bar(
-    cat_df,
-    x="merchant_category",
-    y="is_fraud",
-    color="is_fraud",
-    color_continuous_scale="reds"
-)
-
-st.plotly_chart(fig3, use_container_width=True)
-
-# ----------------------------
-# 🚨 TOP USERS
-# ----------------------------
-st.subheader("🚨 Usuários Mais Suspeitos")
-
-user_risk = filtered_df.groupby("user_id")["risk_score"].mean().reset_index()
-
-fig4 = px.bar(
-    user_risk.sort_values("risk_score", ascending=False).head(10),
-    x="user_id",
-    y="risk_score",
-    color="risk_score"
-)
-
-st.plotly_chart(fig4, use_container_width=True)
-
-# ----------------------------
-# 👤 USER ANALYSIS
-# ----------------------------
-st.subheader("👤 Análise por Usuário")
-
-user = st.selectbox("Selecionar usuário", filtered_df["user_id"].unique())
-
-user_df = filtered_df[filtered_df["user_id"] == user]
-
-col1, col2, col3 = st.columns(3)
-
-col1.metric("Transações", len(user_df))
-col2.metric("Fraudes", int(user_df["predicted_fraud"].sum()))
-col3.metric("Risco médio", round(user_df["risk_score"].mean(), 3))
-
-st.dataframe(user_df, use_container_width=True)
-
-# ----------------------------
-# 📋 TABLE
-# ----------------------------
-st.subheader("📋 Todas as transações")
-
-st.dataframe(
-    filtered_df.sort_values("risk_score", ascending=False),
+st.plotly_chart(
+    px.box(filtered, y="amount", color="is_fraud"),
     use_container_width=True
 )
 
 # ----------------------------
-# 🧠 SHAP (SAFE MODE)
+# 📍 CATEGORIA
 # ----------------------------
-st.subheader("🧠 Explicação da Fraude (IA)")
+st.subheader("📍 Fraude por Categoria")
+
+cat = filtered.groupby("merchant_category")["is_fraud"].mean().reset_index()
+
+st.plotly_chart(
+    px.bar(cat, x="merchant_category", y="is_fraud"),
+    use_container_width=True
+)
+
+# ----------------------------
+# 🚨 TOP USERS
+# ----------------------------
+st.subheader("🚨 Usuários suspeitos")
+
+users = filtered.groupby("user_id")["risk_score"].mean().reset_index()
+
+st.plotly_chart(
+    px.bar(users.sort_values("risk_score", ascending=False).head(10),
+           x="user_id", y="risk_score"),
+    use_container_width=True
+)
+
+# ----------------------------
+# 👤 USER
+# ----------------------------
+st.subheader("👤 Usuário")
+
+u = st.selectbox("Selecionar", filtered["user_id"].unique())
+
+udf = filtered[filtered["user_id"] == u]
+
+st.metric("Transações", len(udf))
+st.metric("Fraudes", int(udf["predicted_fraud"].sum()))
+st.metric("Risco médio", round(udf["risk_score"].mean(), 3))
+
+st.dataframe(udf)
+
+# ----------------------------
+# 📋 TABLE
+# ----------------------------
+st.subheader("📋 Dados")
+
+st.dataframe(filtered.sort_values("risk_score", ascending=False))
+
+# ----------------------------
+# 🧠 SHAP SIMPLES E ESTÁVEL
+# ----------------------------
+st.subheader("🧠 Explicação da IA")
 
 try:
-    import shap
-    import matplotlib.pyplot as plt
+    features = [
+        "amount","lat","long","merchant_category","device_id",
+        "time_diff","user_avg_amount","amount_vs_avg","user_tx_count"
+    ]
 
-    model_path = os.path.join(BASE_DIR, "data", "model.pkl")
+    sample = filtered.sample(1)
+    X = sample[features]
 
-    if os.path.exists(model_path):
+    sv = explainer.shap_values(X)
 
-        model = pickle.load(open(model_path, "rb"))
-        explainer = shap.TreeExplainer(model)
-
-        sample = filtered_df.sample(1)
-
-        st.write("Transação analisada:")
-        st.dataframe(sample)
-
-        features = [
-            "amount",
-            "lat",
-            "long",
-            "merchant_category",
-            "device_id",
-            "time_diff",
-            "user_avg_amount",
-            "amount_vs_avg",
-            "user_tx_count"
-        ]
-
-        X_sample = sample[features]
-
-        shap_values = explainer.shap_values(X_sample)
-
-        # ----------------------------
-        # pega classe fraude
-        # ----------------------------
-        if isinstance(shap_values, list):
-            sv = shap_values[1][0]
-        else:
-            sv = shap_values[0]
-
-        base = float(explainer.expected_value[1]) if isinstance(explainer.expected_value, list) else float(explainer.expected_value)
-
-        # ----------------------------
-        # 🎯 transforma em texto estilo banco
-        # ----------------------------
-        impact = pd.Series(sv, index=features).sort_values()
-
-        top_risk = impact.tail(3)
-        top_safe = impact.head(2)
-
-        st.markdown("### 🧠 Explicação estilo banco:")
-
-        st.write("💳 Essa transação foi analisada automaticamente pela IA.")
-
-        st.write("🚨 Principais fatores de risco:")
-
-        for i, v in top_risk.items():
-            st.write(f"- {i} contribuiu para AUMENTAR risco")
-
-        st.write("🟢 Fatores que reduziram risco:")
-
-        for i, v in top_safe.items():
-            st.write(f"- {i} ajudou a reduzir suspeita")
-
-        st.info(f"📊 Score base do modelo: {round(base, 4)}")
-
+    if isinstance(sv, list):
+        sv = sv[1][0]
     else:
-        st.info("Modelo não encontrado para explicação")
+        sv = sv[0]
 
-except Exception as e:
-    st.warning("🧠 Explicação de IA indisponível no momento (modo seguro ativo)")
+    impact = pd.Series(sv, index=features).sort_values()
+
+    st.markdown("### 💳 Motivos da decisão")
+
+    st.write("🔴 fatores de risco:")
+    for i in impact.tail(3).index:
+        st.write(f"- {i}")
+
+    st.write("🟢 fatores que reduziram risco:")
+    for i in impact.head(2).index:
+        st.write(f"- {i}")
+
+except:
+    st.warning("IA explicável indisponível no momento")
