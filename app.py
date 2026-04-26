@@ -105,8 +105,7 @@ fig1 = px.histogram(
     filtered_df,
     x="risk_score",
     nbins=30,
-    color="risk_score",
-    color_continuous_scale="reds"
+    color_discrete_sequence=["#EF553B"]
 )
 
 st.plotly_chart(fig1, use_container_width=True)
