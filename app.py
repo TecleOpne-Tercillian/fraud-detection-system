@@ -135,6 +135,8 @@ st.subheader("🧠 Explicação da Fraude (SHAP)")
 
 if explainer is not None:
 
+    import matplotlib.pyplot as plt
+
     sample = filtered_df.sample(1)
 
     st.write("Transação analisada:")
@@ -158,9 +160,10 @@ if explainer is not None:
 
     fig, ax = plt.subplots()
 
+    # 🔥 CORREÇÃO IMPORTANTE AQUI
     shap.plots._waterfall.waterfall_legacy(
-        explainer.expected_value,
-        shap_values[0],
+        explainer.expected_value[1],   # <-- FIX PRINCIPAL
+        shap_values[1][0],             # classe positiva
         feature_names=features,
         show=False
     )
@@ -168,4 +171,4 @@ if explainer is not None:
     st.pyplot(fig)
 
 else:
-    st.info("SHAP não disponível (modelo não carregado)")
+    st.info("SHAP não disponível")
