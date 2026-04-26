@@ -27,9 +27,7 @@ MODEL_PATH = os.path.join(BASE_DIR, "data", "model.pkl")
 df = pd.read_csv(DATA_PATH)
 
 # modelo (opcional no app)
-import joblib
 
-model = joblib.load(MODEL_PATH)
 
 # ----------------------------
 # 🧠 RISK SCORE
