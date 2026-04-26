@@ -1,9 +1,11 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import os
 import time
 import random
+import numpy as np
 
 # ----------------------------
 # ⚙️ CONFIG
@@ -31,7 +33,7 @@ df["risk_level"] = df["risk_score"].apply(
 )
 
 # ----------------------------
-# 🚨 ALERTA STYLE (BANCO)
+# 🚨 ALERTA STYLE
 # ----------------------------
 def fraud_alert(score):
     if score > 0.8:
@@ -97,15 +99,51 @@ col4.metric("Risco médio", round(filtered_df["risk_score"].mean(), 3))
 st.divider()
 
 # ----------------------------
-# 📈 GRÁFICO RISCO
+# 📊 GRÁFICO PROFISSIONAL DE RISCO (NOVO)
 # ----------------------------
-st.subheader("📊 Distribuição de Risco")
+st.subheader("📊 Distribuição Profissional de Risco")
 
-fig1 = px.histogram(
-    filtered_df,
-    x="risk_score",
-    nbins=30,
-    color_discrete_sequence=["#EF553B"]
+risk = filtered_df["risk_score"].dropna()
+
+hist = np.histogram(risk, bins=30)
+
+x = hist[1][:-1]
+y = hist[0]
+
+fig1 = go.Figure()
+
+# distribuição
+fig1.add_trace(go.Bar(
+    x=x,
+    y=y,
+    name="Distribuição",
+    marker_color="#636EFA",
+    opacity=0.7
+))
+
+# curva tendência
+fig1.add_trace(go.Scatter(
+    x=x,
+    y=y,
+    mode="lines",
+    name="Tendência de risco",
+    line=dict(color="red", width=3)
+))
+
+# threshold fraude
+fig1.add_vline(
+    x=0.8,
+    line_width=3,
+    line_dash="dash",
+    line_color="red",
+    annotation_text="Limite de Fraude (0.8)"
+)
+
+fig1.update_layout(
+    template="plotly_dark",
+    xaxis_title="Risk Score",
+    yaxis_title="Quantidade de Transações",
+    bargap=0.1
 )
 
 st.plotly_chart(fig1, use_container_width=True)
